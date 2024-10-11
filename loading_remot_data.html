@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTK Example</title>
+    <script type="text/javascript" src="https://unpkg.com/vtk.js"></script>
+</head>
+<body>
+    <div id="container" style="width: 100vw; height: 100vh;"></div>
+
+    <script type="text/javascript">
+        // Create the renderer, render window, and interactor
+        const container = document.querySelector('#container');
+
+        const genericRenderWindow = vtk.Rendering.Misc.vtkGenericRenderWindow.newInstance();
+        genericRenderWindow.setContainer(container);
+        genericRenderWindow.resize();
+
+        const renderer = genericRenderWindow.getRenderer();
+        const renderWindow = genericRenderWindow.getRenderWindow();
+
+        // Create the VTI reader
+        // --- load remote dataset ---
+        
+        
+        const mapper = vtk.Rendering.Core.vtkVolumeMapper.newInstance();
+        const actor = vtk.Rendering.Core.vtkVolume.newInstance();
+
+        // Set up the pipeline: connect the cone source to the mapper
+        
+        actor.setMapper(mapper);
+
+        const reader = vtk.IO.Core.vtkHttpDataSetReader.newInstance({ fetchGzip: true });
+        // wire up the reader to the mapper
+        mapper.setInputConnection(reader.getOutputPort());
+
+        reader
+        .setUrl('https://kitware.github.io/vtk-js/data/volume/LIDC2.vti')
+        .then(() => reader.loadData())
+        .then(() => {
+            // --- Add volume actor to scene ---
+            renderer.addVolume(actor);
+
+            // --- Reset camera and render the scene ---
+            renderer.resetCamera();
+            renderWindow.render();
+        });
+
+        
+
+        // Reset the camera and render
+        // Expose globals so we can play with values in the browser dev console
+        window.renderWindow = renderWindow;
+        window.renderer = renderer;
+
+        window.actor = actor;
+        window.mapper = mapper;
+
+      
+    </script>
+</body>
+</html>

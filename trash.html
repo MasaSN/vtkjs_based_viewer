@@ -1,0 +1,32 @@
+<script type="module">
+    import vtkGenericRenderWindow from 'vtk.js/Sources/Rendering/Misc/GenericRenderWindow';
+  import vtkConSource from 'vtk.js/Sources/Filters/Sources/ConeSources';
+  import vtkActor from 'vtk,js/Sources/Rendering/core/Actor';
+  import vtkMapper from 'vtk.js/Sources/Rednering/Core/Mapper';
+      const container = document.querySelector('#container');
+
+      // We use the wrapper here to abstract out manual RenderWindow/Renderer/OpenGLRenderWindow setup
+      const genericRenderWindow = vtkGenericRenderWindow.newInstance();
+      genericRenderWindow.setContainer(container);
+      genericRenderWindow.resize();
+
+      const renderer = genericRenderWindow.getRenderer();
+      const renderWindow = genericRenderWindow.getRenderWindow();
+
+    // Pipeline
+    
+    const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
+    const actor = vtk.Rendering.Core.vtkActor.newInstance();
+
+    const conSource = vtkConeSource.newInstance({
+      height:1.0,
+    });
+
+    mapper.setInputConnection(conSource.getOutputPort());
+    actor.setMapper(mapper);
+    renderer.addActor(actor);
+
+    // Render
+    renderer.resetCamera();
+    renderWindow.render();
+  </script>

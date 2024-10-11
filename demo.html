@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTK Example</title>
+    <script type="text/javascript" src="https://unpkg.com/vtk.js"></script>
+</head>
+<body>
+    <div id="container" style="width: 100vw; height: 100vh;"></div>
+
+    <script type="text/javascript">
+        
+        const container = document.querySelector('#container');
+
+        // Create a GenericRenderWindow
+        const genericRenderWindow = vtk.Rendering.Misc.vtkGenericRenderWindow.newInstance();
+        genericRenderWindow.setContainer(container);
+        genericRenderWindow.resize();
+
+        const renderer = genericRenderWindow.getRenderer();
+        const renderWindow = genericRenderWindow.getRenderWindow();
+
+        // Create a cone source
+        const coneSource = vtk.Filters.Sources.vtkConeSource.newInstance({ height: 1.0 });
+
+        // Create a mapper and actor
+        const mapper = vtk.Rendering.Core.vtkMapper.newInstance();
+        const actor = vtk.Rendering.Core.vtkActor.newInstance();
+
+        // Set up the pipeline: connect the cone source to the mapper
+        mapper.setInputConnection(coneSource.getOutputPort());
+        actor.setMapper(mapper);
+
+        // Add the actor to the renderer
+        renderer.addActor(actor);
+
+        // Reset the camera and render
+        renderer.resetCamera();
+        renderWindow.render();
+
+        // --- set up our filter
+
+const filter = vtk.Filters.General.vtkOutlineFilter.newInstance();
+
+// coneSource -> filter
+filter.setInputConnection(coneSource.getOutputPort());
+
+const outlineActor = vtk.Rendering.Core.vtkActor.newInstance();
+const outlineMapper = vtk.Rendering.Core.vtkMapper.newInstance();
+outlineActor.setMapper(outlineMapper);
+
+// filter -> mapper
+outlineMapper.setInputConnection(filter.getOutputPort());
+
+
+// --- render ---
+
+renderer.addActor(outlineActor);
+renderWindow.render();
+
+
+// --- Expose globals so we can play with values in the dev console ---
+
+global.renderWindow = renderWindow;
+global.renderer = renderer;
+global.coneSource = coneSource;
+global.actor = actor;
+global.mapper = mapper;
+global.filter = filter;
+
+// listen to changes to the filter and re-render
+filter.onModified(() => {
+  renderWindow.render();
+});
+
+    </script>
+</body>
+</html>
