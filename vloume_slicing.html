@@ -3,29 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VTK Example</title>
+    <title>Your Page Title</title>
+    
     <script type="text/javascript" src="https://unpkg.com/vtk.js"></script>
+    
 </head>
 <body>
-    <div id="container" style="width: 100vw; height: 100vh;"></div>
+    <div id="container"></div>
+    <script>
 
-    <script type="text/javascript">
-        // Create the renderer, render window, and interactor
+        // Select the container element
         const container = document.querySelector('#container');
-
+        // Create a GenericRenderWindow
         const genericRenderWindow = vtk.Rendering.Misc.vtkGenericRenderWindow.newInstance();
         genericRenderWindow.setContainer(container);
         genericRenderWindow.resize();
 
         const renderer = genericRenderWindow.getRenderer();
         const renderWindow = genericRenderWindow.getRenderWindow();
+        const interactor = renderWindow.getInteractor();
 
-        // Create the VTI reader
-        const mapper = vtk.Rendering.Core.vtkVolumeMapper.newInstance();
-        const actor = vtk.Rendering.Core.vtkVolume.newInstance();
+        const { SlicingMode } = vtk.Rendering.Core.vtkImageMapper;
 
+
+        // set interactor style for image slicing
+        const istyle = vtk.Interaction.Style.vtkInteractorStyleImage.newInstance();
+        istyle.setInteractionMode('IMAGE_SLICING');
+        renderWindow.getInteractor().setInteractorStyle(istyle);
+
+        //set the slicing actor
+        const actor = vtk.Rendering.Core.vtkImageSlice.newInstance();
+        const mapper = vtk.Rendering.Core.vtkImageMapper.newInstance();
+
+        
+        mapper.setSliceAtFocalPoint(true); // set at focul point
+        mapper.setSlicingMode(SlicingMode.Z); // which axis
+        
+        // tell actor which mapper to use
         actor.setMapper(mapper);
 
+        // set up default window/level
+        actor.getProperty().setColorWindow(255);
+        actor.getProperty().setColorLevel(127);
+
+        //-------------------------------- added code from loading.html ---------------------------------------------
         // Initialize the piecewise function and color transfer function
         const piecewiseFun = vtk.Common.DataModel.vtkPiecewiseFunction.newInstance();
         const lookupTable = vtk.Rendering.Core.vtkColorTransferFunction.newInstance();
@@ -62,12 +83,16 @@
                 renderer.resetCamera();
                 renderWindow.render();
             });
+        // ----------------------------------------------------------------------------------------------------------
 
-        // Expose globals for debugging
-        window.renderWindow = renderWindow;
-        window.renderer = renderer;
-        window.actor = actor;
-        window.mapper = mapper;
+        // Render the scene
+        renderWindow.render();
+
+        // Make the render window interactive
+        interactor.initialize();
+        interactor.bindEvents(container);
+
     </script>
+
 </body>
 </html>
